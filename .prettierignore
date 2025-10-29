@@ -1,0 +1,4 @@
+# Generated files
+src/**/*.generated.*
+src/**/*-migration.*
+src/database/prisma/generated

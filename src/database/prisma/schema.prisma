@@ -1,0 +1,82 @@
+// ============================================================================
+//                            PRISMA CONFIG
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+//                            PRISMA SCHEMA
+// ============================================================================
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum EntityType {
+  USER
+  USER_APP_SETTING
+}
+
+enum AuditEventType {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model User {
+  id          String           @id @default(uuid()) @db.Uuid
+  email       String           @unique @db.VarChar(255)
+  name        String?          @db.VarChar(255)
+  role        Role?            @default(USER)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt   DateTime?        @map("deleted_at") @db.Timestamp(6)
+  // Relations
+  appSettings UserAppSetting[]
+
+  @@map("users")
+}
+
+model AuditLog {
+  id         String         @id @default(uuid()) @db.Uuid
+  entityType EntityType     @map("entity_type")
+  entityId   String         @map("entity_id") @db.Uuid
+  eventType  AuditEventType @map("event_type")
+  userId     String?        @map("user_id") @db.Uuid
+  changes    Json?          @db.JsonB // AuditChanges: { before?: {...}, after?: {...}, changedFields?: string[] }
+  metadata   Json?          @db.JsonB
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model UserAppSetting {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id") @db.Uuid
+  appId       String    @map("app_id") @db.VarChar(255)
+  preferences Json?     @db.JsonB
+  description String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Partial unique index: must be defined in migrations (production)
+  // and schema_extensions.sql (development)
+  @@index([userId, appId])
+  @@map("user_app_settings")
+}
