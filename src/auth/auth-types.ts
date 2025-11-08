@@ -1,6 +1,6 @@
-export const ROLES_METADATA_KEY = 'roles';
-export const PERMISSIONS_METADATA_KEY = 'permissions';
-export const PUBLIC_METADATA_KEY = 'isPublic';
+export const ROLES_METADATA_KEY = Symbol('roles');
+export const PERMISSIONS_METADATA_KEY = Symbol('permissions');
+export const PUBLIC_METADATA_KEY = Symbol('isPublic');
 
 export enum Role {
   ADMIN = 'ADMIN',

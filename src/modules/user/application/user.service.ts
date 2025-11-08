@@ -1,102 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@database/prisma/prisma.service';
+import { PrismaSelectObject } from '@common/types/common.type';
+import { UserRepository } from '@modules/user/infrastructure/user.repository';
 import { CreateUserInput, UpdateUserInput, User } from '@modules/user/presentation/user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
-  async findOne(id: string): Promise<User> {
-    const user = await this.prisma.client.user.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+  async findOne(id: string, select: PrismaSelectObject): Promise<User> {
+    const user = await this.userRepository.findOne(id, select);
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    // if (!user) {
+    //   throw new NotFoundException({
+    //     statusCode: 404,
+    //     code: 'NOT_FOUND',
+    //     message: `User with ID ${id} not found`,
+    //   });
+    // }
 
     return user as unknown as User;
   }
 
   async findAll(): Promise<User[]> {
-    const users = await this.prisma.client.user.findMany({
-      where: {
-        deletedAt: null,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return users as unknown as User[];
+    return this.userRepository.findAll();
   }
 
   async create(input: CreateUserInput): Promise<User> {
-    const user = await this.prisma.client.user.create({
-      data: {
-        email: input.email,
-        name: input.name ?? null,
-        role: input.role as 'ADMIN' | 'USER',
-        deletedAt: input.deletedAt ?? null,
-      },
-    });
-
-    return user as unknown as User;
+    return this.userRepository.create(input);
   }
 
   async update(id: string, input: UpdateUserInput): Promise<User> {
-    const existingUser = await this.prisma.client.user.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+    // const existingUser = await this.userRepository.findOne(id);
 
-    if (!existingUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    // if (!existingUser) {
+    //   throw new NotFoundException(`User with ID ${id} not found`);
+    // }
 
-    const updateData: {
-      email?: string;
-      name?: string | null;
-      role?: 'ADMIN' | 'USER';
-      deletedAt?: Date | null;
-    } = {};
-    if (input.email !== undefined) updateData.email = input.email;
-    if (input.name !== undefined) updateData.name = input.name ?? null;
-    if (input.role !== undefined) updateData.role = input.role as 'ADMIN' | 'USER';
-    if (input.deletedAt !== undefined) updateData.deletedAt = input.deletedAt ?? null;
-
-    const user = await this.prisma.client.user.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return user as unknown as User;
+    return this.userRepository.update(id, input);
   }
 
   async remove(id: string): Promise<User> {
-    const existingUser = await this.prisma.client.user.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+    // const existingUser = await this.userRepository.findOne(id);
 
-    if (!existingUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    // if (!existingUser) {
+    //   throw new NotFoundException(`User with ID ${id} not found`);
+    // }
 
-    const user = await this.prisma.client.user.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return user as unknown as User;
+    return this.userRepository.softDelete(id);
   }
 }

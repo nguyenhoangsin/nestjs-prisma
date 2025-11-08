@@ -6,14 +6,23 @@ import { CreateUserDto } from '@modules/user/presentation/user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(+id);
-  // }
-  // @Get()
-  // findAll() {
-  //   return this.userService.findAll();
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(id, {
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+  @Get()
+  findAll() {
+    return this.userService.findAll();
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {

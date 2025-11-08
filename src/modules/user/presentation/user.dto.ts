@@ -2,6 +2,7 @@ import { PartialType } from '@nestjs/mapped-types';
 import { InputType, ObjectType, Field, ID, PartialType as GqlPartialType } from '@nestjs/graphql';
 import { IsOptional, IsEmail, IsString, IsEnum, MaxLength } from 'class-validator';
 import { Base64TextScalar } from '@graphql/graphql-scalars';
+import { Virtual } from '@common/decorators/virtual.decorator';
 import { Base64Text } from '@common/decorators/base64-text.decorator';
 import { Role } from '@auth/auth-types';
 
@@ -54,6 +55,34 @@ export class User {
 
   @Field(() => Role)
   role: Role;
+
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
+
+  @Field(() => Date, { nullable: true })
+  deletedAt?: Date | null;
+
+  @Virtual()
+  @Field(() => String, { nullable: true })
+  virtualField?: string | null;
+}
+
+@ObjectType()
+export class UserAppSetting {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  appId: string;
+
+  @Field(() => String, { nullable: true })
+  preferences?: string | null;
+
+  @Field(() => String, { nullable: true })
+  description?: string | null;
 
   @Field(() => Date)
   createdAt: Date;
