@@ -2,9 +2,11 @@ import { PartialType } from '@nestjs/mapped-types';
 import { InputType, ObjectType, Field, ID, PartialType as GqlPartialType } from '@nestjs/graphql';
 import { IsOptional, IsEmail, IsString, IsEnum, MaxLength } from 'class-validator';
 import { Base64TextScalar } from '@graphql/graphql-scalars';
+import { Passthrough } from '@common/decorators/passthrough.decorator';
 import { Virtual } from '@common/decorators/virtual.decorator';
 import { Base64Text } from '@common/decorators/base64-text.decorator';
 import { Role } from '@auth/auth-types';
+import { PaginationMeta } from '@graphql/graphql-types';
 
 export class CreateUserDto {
   @IsEmail()
@@ -92,4 +94,15 @@ export class UserAppSetting {
 
   @Field(() => Date, { nullable: true })
   deletedAt?: Date | null;
+}
+
+@ObjectType()
+export class PaginatedUsers {
+  @Passthrough()
+  @Field(() => [User])
+  items: User[];
+
+  @Virtual()
+  @Field(() => PaginationMeta)
+  meta: PaginationMeta;
 }

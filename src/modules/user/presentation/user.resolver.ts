@@ -4,11 +4,13 @@ import { PrismaSelectObject } from '@common/types/common.type';
 import { SelectFields } from '@common/decorators/select-fields.decorator';
 import { UserService } from '@modules/user/application/user.service';
 import { PrismaService } from '@database/prisma/prisma.service';
+import { PaginationInput } from '@graphql/graphql-types';
 import {
   User,
   UserAppSetting,
   CreateUserInput,
   UpdateUserInput,
+  PaginatedUsers,
 } from '@modules/user/presentation/user.dto';
 import { DataLoaderService, DataLoaderKey } from '@shared/data-loader.service';
 
@@ -28,24 +30,43 @@ export class UserResolver {
     });
   }
 
+  /**
+   * Get a user by id
+   * @param id - User id
+   * @param select - Prisma select object
+   * @returns User
+   */
   @Query(() => User)
-  getUser(
+  user(
     @Args('id', { type: () => ID }) id: string,
     @SelectFields(User) select: PrismaSelectObject,
   ): Promise<User> {
     return this.userService.findOne(id, select);
   }
 
+  /**
+   * Get paginated users
+   * @param pagination - Pagination input (page, limit)
+   * @param select - Prisma select object
+   * @returns Paginated users with metadata
+   */
+  @Query(() => PaginatedUsers)
+  async users(
+    @Args('pagination', { type: () => PaginationInput })
+    pagination: PaginationInput,
+    @SelectFields(PaginatedUsers) select: PrismaSelectObject,
+  ): Promise<PaginatedUsers> {
+    return this.userService.findManyPaginated(pagination, select);
+  }
+
+  /**
+   * Get all users
+   * @param select - Prisma select object
+   * @returns All users
+   */
   @Query(() => [User])
-  async getUsers(@SelectFields(User) select: PrismaSelectObject): Promise<User[]> {
-    const users = await this.prisma.client.user.findMany({
-      where: {},
-      orderBy: {
-        createdAt: 'desc',
-      },
-      ...select,
-    });
-    return users as unknown as User[];
+  async allUsers(@SelectFields(User) select: PrismaSelectObject): Promise<User[]> {
+    return this.userService.findAll(select);
   }
 
   @ResolveField(() => [UserAppSetting])

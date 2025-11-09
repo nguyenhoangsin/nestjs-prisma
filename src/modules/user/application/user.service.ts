@@ -1,7 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
 import { UserRepository } from '@modules/user/infrastructure/user.repository';
-import { CreateUserInput, UpdateUserInput, User } from '@modules/user/presentation/user.dto';
+import { PaginationInput, PaginationMeta } from '@graphql/graphql-types';
+import {
+  CreateUserInput,
+  UpdateUserInput,
+  User,
+  PaginatedUsers,
+} from '@modules/user/presentation/user.dto';
 
 @Injectable()
 export class UserService {
@@ -10,23 +18,48 @@ export class UserService {
   async findOne(id: string, select: PrismaSelectObject): Promise<User> {
     const user = await this.userRepository.findOne(id, select);
 
-    // if (!user) {
-    //   throw new NotFoundException({
-    //     statusCode: 404,
-    //     code: 'NOT_FOUND',
-    //     message: `User with ID ${id} not found`,
-    //   });
-    // }
+    if (!user) {
+      throw new NotFoundException(CUSTOM_HTTP_STATUS.NOT_FOUND);
+    }
 
-    return user as unknown as User;
+    return plainToInstance(User, user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+  async findManyPaginated(
+    pagination: PaginationInput,
+    select?: PrismaSelectObject,
+  ): Promise<PaginatedUsers> {
+    const [items, total] = await this.userRepository.findManyPaginated(pagination, select);
+    const transformedItems = plainToInstance(User, items);
+
+    const { page, limit } = pagination;
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    const meta: PaginationMeta = {
+      total,
+      page,
+      pageSize: limit,
+      totalPages,
+      hasNextPage,
+      hasPreviousPage,
+    };
+
+    return {
+      items: transformedItems,
+      meta,
+    };
+  }
+
+  async findAll(select?: PrismaSelectObject): Promise<User[]> {
+    const items = await this.userRepository.findAll(select);
+    return plainToInstance(User, items);
   }
 
   async create(input: CreateUserInput): Promise<User> {
-    return this.userRepository.create(input);
+    const user = await this.userRepository.create(input);
+    return plainToInstance(User, user);
   }
 
   async update(id: string, input: UpdateUserInput): Promise<User> {
@@ -36,7 +69,8 @@ export class UserService {
     //   throw new NotFoundException(`User with ID ${id} not found`);
     // }
 
-    return this.userRepository.update(id, input);
+    const user = await this.userRepository.update(id, input);
+    return plainToInstance(User, user);
   }
 
   async remove(id: string): Promise<User> {
@@ -46,6 +80,7 @@ export class UserService {
     //   throw new NotFoundException(`User with ID ${id} not found`);
     // }
 
-    return this.userRepository.softDelete(id);
+    const user = await this.userRepository.softDelete(id);
+    return plainToInstance(User, user);
   }
 }

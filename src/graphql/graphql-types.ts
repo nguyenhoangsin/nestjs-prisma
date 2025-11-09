@@ -1,46 +1,43 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Type } from '@nestjs/common';
+import { InputType, ObjectType, Field, Int } from '@nestjs/graphql';
+import { IsOptional, IsInt, Min } from 'class-validator';
 
-/**
- * Pagination Meta Information
- * Type dùng chung cho nhiều modules (User, Post, Comment...)
- * Đặt trong graphql/types vì được sử dụng across modules
- */
-@ObjectType()
-export class PaginationMeta {
-  @Field(() => Int, { description: 'Total number of items' })
-  total: number;
-
-  @Field(() => Int, { description: 'Current page number' })
+@InputType()
+export class PaginationInput {
+  @Field(() => Int)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
   page: number;
 
-  @Field(() => Int, { description: 'Number of items per page' })
-  pageSize: number;
-
-  @Field(() => Int, { description: 'Total number of pages' })
-  totalPages: number;
-
-  @Field(() => Boolean, { description: 'Whether there is a next page' })
-  hasNextPage: boolean;
-
-  @Field(() => Boolean, { description: 'Whether there is a previous page' })
-  hasPreviousPage: boolean;
+  @Field(() => Int)
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit: number;
 }
 
-/**
- * Generic Paginated Response
- * Wrapper cho các list responses có pagination
- */
+@InputType()
+export class SortInput {
+  @Field(() => String, { nullable: true })
+  sortBy?: string;
+
+  @Field(() => String, { nullable: true })
+  sortOrder?: 'asc' | 'desc';
+}
+
+@InputType()
+export class FilterInput {
+  @Field(() => [String], { nullable: true })
+  search?: string[];
+}
+
 @ObjectType()
-export class PaginationInfo {
-  @Field(() => Int)
-  total: number;
-
-  @Field(() => Int)
-  page: number;
-
-  @Field(() => Int)
-  pageSize: number;
-
-  @Field(() => Int)
-  totalPages: number;
+export class PaginationMeta {
+  @Field(() => Int) total: number;
+  @Field(() => Int) page: number;
+  @Field(() => Int) pageSize: number;
+  @Field(() => Int) totalPages: number;
+  @Field(() => Boolean) hasNextPage: boolean;
+  @Field(() => Boolean) hasPreviousPage: boolean;
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@database/prisma/prisma.service';
 import { PrismaSelectObject } from '@common/types/common.type';
+import { PaginationInput } from '@graphql/graphql-types';
 import { CreateUserInput, UpdateUserInput, User } from '@modules/user/presentation/user.dto';
 
 @Injectable()
@@ -16,15 +17,40 @@ export class UserRepository {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    const users = await this.prisma.client.user.findMany({
-      where: {},
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+  findManyPaginated(pagination: PaginationInput, select?: PrismaSelectObject) {
+    const { page, limit } = pagination;
+    const skip = (page - 1) * limit;
 
-    return users as unknown as User[];
+    const queryOptions = {
+      where: {} as Record<string, never>,
+      orderBy: {
+        createdAt: 'desc' as const,
+      },
+      skip,
+      take: limit,
+    };
+
+    return this.prisma.client.$transaction([
+      this.prisma.client.user.findMany({
+        ...queryOptions,
+        ...(select || {}),
+      }),
+      this.prisma.client.user.count(),
+    ]);
+  }
+
+  findAll(select?: PrismaSelectObject) {
+    const queryOptions = {
+      where: {} as Record<string, never>,
+      orderBy: {
+        createdAt: 'desc' as const,
+      },
+    };
+
+    return this.prisma.client.user.findMany({
+      ...queryOptions,
+      ...(select || {}),
+    });
   }
 
   async create(input: CreateUserInput): Promise<User> {

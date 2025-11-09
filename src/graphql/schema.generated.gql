@@ -2,6 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type PaginationMeta {
+  total: Int!
+  page: Int!
+  pageSize: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
 type User {
   id: ID!
   email: String!
@@ -34,12 +43,23 @@ type UserAppSetting {
   deletedAt: DateTime
 }
 
+type PaginatedUsers {
+  items: [User!]!
+  meta: PaginationMeta!
+}
+
 """Base64Text custom scalar type - decodes Base64 strings to text"""
 scalar Base64Text
 
 type Query {
-  getUser(id: ID!): User!
-  getUsers: [User!]!
+  user(id: ID!): User!
+  users(pagination: PaginationInput!): PaginatedUsers!
+  allUsers: [User!]!
+}
+
+input PaginationInput {
+  page: Int!
+  limit: Int!
 }
 
 type Mutation {
