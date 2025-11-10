@@ -1,21 +1,5 @@
-import { Type } from '@nestjs/common';
 import { InputType, ObjectType, Field, Int } from '@nestjs/graphql';
-import { IsOptional, IsInt, Min } from 'class-validator';
-
-@InputType()
-export class PaginationInput {
-  @Field(() => Int)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  page: number;
-
-  @Field(() => Int)
-  @IsOptional()
-  @IsInt()
-  @Min(1)
-  limit: number;
-}
+import { PaginationDto, PaginationMeta as CommonPaginationMeta } from '@common/dtos/common.dto';
 
 @InputType()
 export class SortInput {
@@ -32,12 +16,27 @@ export class FilterInput {
   search?: string[];
 }
 
+@InputType()
+export class PaginationInput extends PaginationDto {
+  @Field(() => Int)
+  declare page: number;
+
+  @Field(() => Int)
+  declare limit: number;
+}
+
 @ObjectType()
-export class PaginationMeta {
-  @Field(() => Int) total: number;
-  @Field(() => Int) page: number;
-  @Field(() => Int) pageSize: number;
-  @Field(() => Int) totalPages: number;
-  @Field(() => Boolean) hasNextPage: boolean;
-  @Field(() => Boolean) hasPreviousPage: boolean;
+export class PaginationMeta extends CommonPaginationMeta {
+  @Field(() => Int)
+  declare total: number;
+  @Field(() => Int)
+  declare page: number;
+  @Field(() => Int)
+  declare pageSize: number;
+  @Field(() => Int)
+  declare totalPages: number;
+  @Field(() => Boolean)
+  declare hasNextPage: boolean;
+  @Field(() => Boolean)
+  declare hasPreviousPage: boolean;
 }

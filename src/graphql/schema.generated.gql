@@ -18,9 +18,7 @@ type User {
   role: Role!
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime
-  virtualField: String
-  appSettings: [UserAppSetting!]!
+  appSettings: [UserAppSetting!]
 }
 
 enum Role {
@@ -40,7 +38,6 @@ type UserAppSetting {
   description: String
   createdAt: DateTime!
   updatedAt: DateTime!
-  deletedAt: DateTime
 }
 
 type PaginatedUsers {
@@ -53,8 +50,8 @@ scalar Base64Text
 
 type Query {
   user(id: ID!): User!
-  users(pagination: PaginationInput!): PaginatedUsers!
   allUsers: [User!]!
+  users(pagination: PaginationInput!): PaginatedUsers!
 }
 
 input PaginationInput {
@@ -65,19 +62,17 @@ input PaginationInput {
 type Mutation {
   createUser(input: CreateUserInput!): User!
   updateUser(id: ID!, input: UpdateUserInput!): User!
-  removeUser(id: ID!): User!
+  deleteUser(id: ID!): User!
 }
 
 input CreateUserInput {
   email: String!
   name: String
   role: Role
-  deletedAt: DateTime
 }
 
 input UpdateUserInput {
   email: String
   name: String
   role: Role
-  deletedAt: DateTime
 }

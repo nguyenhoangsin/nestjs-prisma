@@ -1,6 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { InputType, ObjectType, Field, ID, PartialType as GqlPartialType } from '@nestjs/graphql';
 import { IsOptional, IsEmail, IsString, IsEnum, MaxLength } from 'class-validator';
+import { IPaginated } from '@common/interfaces/common.interface';
 import { Base64TextScalar } from '@graphql/graphql-scalars';
 import { Passthrough } from '@common/decorators/passthrough.decorator';
 import { Virtual } from '@common/decorators/virtual.decorator';
@@ -36,9 +37,6 @@ export class CreateUserInput extends CreateUserDto {
 
   @Field(() => Role, { nullable: true })
   declare role?: Role;
-
-  @Field(() => Date, { nullable: true })
-  deletedAt?: Date;
 }
 
 @InputType()
@@ -64,12 +62,9 @@ export class User {
   @Field(() => Date)
   updatedAt: Date;
 
-  @Field(() => Date, { nullable: true })
-  deletedAt?: Date | null;
-
   @Virtual()
-  @Field(() => String, { nullable: true })
-  virtualField?: string | null;
+  @Field(() => [UserAppSetting], { nullable: true })
+  appSettings?: UserAppSetting[] | null;
 }
 
 @ObjectType()
@@ -91,13 +86,10 @@ export class UserAppSetting {
 
   @Field(() => Date)
   updatedAt: Date;
-
-  @Field(() => Date, { nullable: true })
-  deletedAt?: Date | null;
 }
 
 @ObjectType()
-export class PaginatedUsers {
+export class PaginatedUsers implements IPaginated<User> {
   @Passthrough()
   @Field(() => [User])
   items: User[];

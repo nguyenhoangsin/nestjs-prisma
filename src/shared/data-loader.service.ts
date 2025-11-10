@@ -1,7 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import * as DataLoader from 'dataloader';
-import { groupBy } from 'lodash';
+import { isNil, groupBy } from 'lodash';
 import { PrismaSelectObject } from '@common/types/common.type';
 
 export interface DataLoaderKey<K> {
@@ -46,8 +46,13 @@ export class DataLoaderService {
       async (keys: DataLoaderKey<K>[]) => {
         if (keys.length === 0) return [];
 
-        // Collect all unique keys
-        const uniqueKeys = [...new Set(keys.map(k => k.key))];
+        // Collect all unique keys, filtering out undefined and null values
+        const uniqueKeys = [...new Set(keys.map(k => k.key).filter(k => !isNil(k)))];
+
+        // If all keys were filtered out, return empty arrays for all keys
+        if (uniqueKeys.length === 0) {
+          return keys.map(() => []);
+        }
 
         // Merge all select fields from all keys
         const mergedSelect: Record<string, true> = { [foreignKey]: true };

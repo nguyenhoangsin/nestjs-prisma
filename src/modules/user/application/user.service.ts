@@ -3,10 +3,10 @@ import { plainToInstance } from 'class-transformer';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
 import { UserRepository } from '@modules/user/infrastructure/user.repository';
-import { PaginationInput, PaginationMeta } from '@graphql/graphql-types';
+import { PaginationMeta } from '@graphql/graphql-types';
 import {
-  CreateUserInput,
-  UpdateUserInput,
+  CreateUserDto,
+  UpdateUserDto,
   User,
   PaginatedUsers,
 } from '@modules/user/presentation/user.dto';
@@ -25,14 +25,23 @@ export class UserService {
     return plainToInstance(User, user);
   }
 
-  async findManyPaginated(
-    pagination: PaginationInput,
+  async findAll(select?: PrismaSelectObject): Promise<User[]> {
+    const items = await this.userRepository.findAll(select);
+    return plainToInstance(User, items);
+  }
+
+  async findPaginated(
+    page: number,
+    limit: number,
     select?: PrismaSelectObject,
   ): Promise<PaginatedUsers> {
-    const [items, total] = await this.userRepository.findManyPaginated(pagination, select);
+    const result = (await this.userRepository.findPaginated(page, limit, select)) as [
+      unknown[],
+      number,
+    ];
+    const [items, total] = result;
     const transformedItems = plainToInstance(User, items);
 
-    const { page, limit } = pagination;
     const totalPages = Math.ceil(total / limit);
     const hasNextPage = page < totalPages;
     const hasPreviousPage = page > 1;
@@ -52,35 +61,30 @@ export class UserService {
     };
   }
 
-  async findAll(select?: PrismaSelectObject): Promise<User[]> {
-    const items = await this.userRepository.findAll(select);
-    return plainToInstance(User, items);
-  }
-
-  async create(input: CreateUserInput): Promise<User> {
+  async create(input: CreateUserDto): Promise<User> {
     const user = await this.userRepository.create(input);
     return plainToInstance(User, user);
   }
 
-  async update(id: string, input: UpdateUserInput): Promise<User> {
-    // const existingUser = await this.userRepository.findOne(id);
+  async update(id: string, input: UpdateUserDto): Promise<User> {
+    const exists = await this.userRepository.exists(id);
 
-    // if (!existingUser) {
-    //   throw new NotFoundException(`User with ID ${id} not found`);
-    // }
+    if (!exists) {
+      throw new NotFoundException(CUSTOM_HTTP_STATUS.NOT_FOUND);
+    }
 
     const user = await this.userRepository.update(id, input);
     return plainToInstance(User, user);
   }
 
   async remove(id: string): Promise<User> {
-    // const existingUser = await this.userRepository.findOne(id);
+    const exists = await this.userRepository.exists(id);
 
-    // if (!existingUser) {
-    //   throw new NotFoundException(`User with ID ${id} not found`);
-    // }
+    if (!exists) {
+      throw new NotFoundException(CUSTOM_HTTP_STATUS.NOT_FOUND);
+    }
 
-    const user = await this.userRepository.softDelete(id);
+    const user = await this.userRepository.delete(id);
     return plainToInstance(User, user);
   }
 }

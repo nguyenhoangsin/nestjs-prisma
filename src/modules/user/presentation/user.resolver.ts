@@ -45,6 +45,16 @@ export class UserResolver {
   }
 
   /**
+   * Get all users
+   * @param select - Prisma select object
+   * @returns All users
+   */
+  @Query(() => [User])
+  async allUsers(@SelectFields(User) select: PrismaSelectObject): Promise<User[]> {
+    return this.userService.findAll(select);
+  }
+
+  /**
    * Get paginated users
    * @param pagination - Pagination input (page, limit)
    * @param select - Prisma select object
@@ -56,17 +66,7 @@ export class UserResolver {
     pagination: PaginationInput,
     @SelectFields(PaginatedUsers) select: PrismaSelectObject,
   ): Promise<PaginatedUsers> {
-    return this.userService.findManyPaginated(pagination, select);
-  }
-
-  /**
-   * Get all users
-   * @param select - Prisma select object
-   * @returns All users
-   */
-  @Query(() => [User])
-  async allUsers(@SelectFields(User) select: PrismaSelectObject): Promise<User[]> {
-    return this.userService.findAll(select);
+    return this.userService.findPaginated(pagination.page, pagination.limit, select);
   }
 
   @ResolveField(() => [UserAppSetting])
@@ -91,7 +91,7 @@ export class UserResolver {
   }
 
   @Mutation(() => User)
-  removeUser(@Args('id', { type: () => ID }) id: string): Promise<User> {
+  deleteUser(@Args('id', { type: () => ID }) id: string): Promise<User> {
     return this.userService.remove(id);
   }
 }
