@@ -30,13 +30,7 @@ export function Base64Text() {
       });
     }
 
-    try {
-      return decodeBase64Text(value);
-    } catch (error) {
-      throw new BadRequestException({
-        ...CUSTOM_HTTP_STATUS.VALIDATION_FAILED,
-        message: `${key} ${error instanceof Error ? error.message : 'decode base64 failed'}`,
-      });
-    }
+    // decodeBase64Text returns original value if decode fails
+    return decodeBase64Text(value);
   });
 }

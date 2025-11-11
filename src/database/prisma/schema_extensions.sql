@@ -2,6 +2,13 @@
 -- SQL extensions for database structure (indexes, constraints, triggers, etc.)
 -- Automatically applied after db push/reset in development
 -- ============================================================================
+-- Partial Unique Index: User (email)
+DROP INDEX IF EXISTS unique_user_email_active;
+
+CREATE UNIQUE INDEX unique_user_email_active ON users (email)
+WHERE
+  deleted_at IS NULL;
+
 -- Partial Unique Index: UserAppSetting
 DROP INDEX IF EXISTS unique_user_app_setting_active;
 

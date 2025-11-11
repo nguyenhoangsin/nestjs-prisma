@@ -1,13 +1,26 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { InputType, ObjectType, Field, ID, PartialType as GqlPartialType } from '@nestjs/graphql';
-import { IsOptional, IsEmail, IsString, IsEnum, MaxLength } from 'class-validator';
+import { IsOptional, IsEmail, IsString, IsEnum, MaxLength, IsArray, IsUUID } from 'class-validator';
 import { IPaginated } from '@common/interfaces/common.interface';
-import { Base64TextScalar } from '@graphql/graphql-scalars';
 import { Passthrough } from '@common/decorators/passthrough.decorator';
 import { Virtual } from '@common/decorators/virtual.decorator';
 import { Base64Text } from '@common/decorators/base64-text.decorator';
 import { Role } from '@auth/auth-types';
 import { PaginationMeta } from '@graphql/graphql-types';
+import { PaginationDto } from '@common/dtos/common.dto';
+import { UserIncludeOption } from '@modules/user/presentation/user-types';
+
+export class UserQueryDto {
+  @IsOptional()
+  @IsEnum(UserIncludeOption)
+  include?: UserIncludeOption;
+}
+
+export class UsersQueryDto extends PartialType(PaginationDto) {
+  @IsOptional()
+  @IsEnum(UserIncludeOption, { each: true })
+  include?: UserIncludeOption | UserIncludeOption[];
+}
 
 export class CreateUserDto {
   @IsEmail()
@@ -26,6 +39,12 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
+
+export class DeleteUsersDto {
+  @IsArray()
+  @IsUUID('4', { each: true })
+  ids: string[];
+}
 
 @InputType()
 export class CreateUserInput extends CreateUserDto {

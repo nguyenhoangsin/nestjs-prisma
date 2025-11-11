@@ -69,29 +69,71 @@ export class UserResolver {
     return this.userService.findPaginated(pagination.page, pagination.limit, select);
   }
 
+  /**
+   * Create a new user
+   * @param input - User input data
+   * @param select - Prisma select object
+   * @returns Created user
+   */
+  @Mutation(() => User)
+  createUser(
+    @Args('input') input: CreateUserInput,
+    @SelectFields(User) select: PrismaSelectObject,
+  ): Promise<User> {
+    return this.userService.create(input, select);
+  }
+
+  /**
+   * Update a user by id
+   * @param id - User id
+   * @param input - User input data
+   * @param select - Prisma select object
+   * @returns Updated user
+   */
+  @Mutation(() => User)
+  updateUser(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateUserInput,
+    @SelectFields(User) select: PrismaSelectObject,
+  ): Promise<User> {
+    return this.userService.update(id, input, select);
+  }
+
+  /**
+   * Delete a user by id (soft delete with all child records)
+   * @param id - User id
+   * @param select - Prisma select object
+   * @returns Deleted user
+   */
+  @Mutation(() => User)
+  deleteUser(
+    @Args('id', { type: () => ID }) id: string,
+    @SelectFields(User) select: PrismaSelectObject,
+  ): Promise<User> {
+    return this.userService.remove(id, select);
+  }
+
+  /**
+   * Delete multiple users by ids (soft delete with all child records)
+   * @param ids - Array of user ids
+   * @returns Count of deleted users
+   */
+  @Mutation(() => Number)
+  deleteUsers(@Args('ids', { type: () => [ID] }) ids: string[]): Promise<number> {
+    return this.userService.removeMany(ids).then(result => result.count);
+  }
+
+  /**
+   * Get user app settings
+   * @param user - Parent user object
+   * @param select - Prisma select object
+   * @returns User app settings
+   */
   @ResolveField(() => [UserAppSetting])
   async appSettings(
     @Parent() user: User,
     @SelectFields(UserAppSetting) select: PrismaSelectObject,
   ): Promise<UserAppSetting[]> {
     return this.appSettingsLoader.load({ key: user.id, prismaSelect: select });
-  }
-
-  @Mutation(() => User)
-  createUser(@Args('input') input: CreateUserInput): Promise<User> {
-    return this.userService.create(input);
-  }
-
-  @Mutation(() => User)
-  updateUser(
-    @Args('id', { type: () => ID }) id: string,
-    @Args('input') input: UpdateUserInput,
-  ): Promise<User> {
-    return this.userService.update(id, input);
-  }
-
-  @Mutation(() => User)
-  deleteUser(@Args('id', { type: () => ID }) id: string): Promise<User> {
-    return this.userService.remove(id);
   }
 }

@@ -1,24 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaSelectObject } from '@common/types/common.type';
 import { IRepository } from '@common/interfaces/repository.interface';
 import { PrismaService } from '@database/prisma/prisma.service';
-import { CreateUserDto, UpdateUserDto, User } from '@modules/user/presentation/user.dto';
+import { UserQueryOptions } from '@modules/user/presentation/user-types';
+import { CreateUserDto, UpdateUserDto } from '@modules/user/presentation/user.dto';
 
 @Injectable()
 export class UserRepository implements IRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findOne(id: string, options?: PrismaSelectObject) {
+  findOne(id: string, options?: UserQueryOptions) {
     return this.prisma.client.user.findUnique({
       where: {
         id,
       },
-      ...(options || {}),
+      ...(options?.select ? { select: options.select } : {}),
     });
   }
 
-  findAll(options?: PrismaSelectObject) {
+  findAll(options?: UserQueryOptions) {
     const queryOptions = {
       where: {} as Prisma.UserWhereInput,
       orderBy: {
@@ -28,11 +28,11 @@ export class UserRepository implements IRepository {
 
     return this.prisma.client.user.findMany({
       ...queryOptions,
-      ...(options || {}),
+      ...(options?.select ? { select: options.select } : {}),
     });
   }
 
-  findPaginated(page: number, limit: number, options?: PrismaSelectObject) {
+  findPaginated(page: number, limit: number, options?: UserQueryOptions) {
     const skip = (page - 1) * limit;
 
     const queryOptions = {
@@ -47,132 +47,123 @@ export class UserRepository implements IRepository {
     return this.prisma.client.$transaction([
       this.prisma.client.user.findMany({
         ...queryOptions,
-        ...(options || {}),
+        ...(options?.select ? { select: options.select } : {}),
       }),
       this.prisma.client.user.count(),
     ]);
   }
 
-  async create(dto: CreateUserDto) {
+  async create(dto: CreateUserDto, options?: UserQueryOptions) {
     const user = await this.prisma.client.user.create({
       data: dto as Prisma.UserCreateInput,
+      ...(options?.select ? { select: options.select } : {}),
     });
 
     return user;
   }
 
-  async createMany(dtos: CreateUserDto[]) {
-    return this.prisma.client.user.createMany({
-      data: dtos as Prisma.UserCreateManyInput[],
-    });
-  }
-
-  async update(id: string, dto: UpdateUserDto) {
+  async update(id: string, dto: UpdateUserDto, options?: UserQueryOptions) {
     const user = await this.prisma.client.user.update({
       where: { id },
       data: dto as Prisma.UserUpdateInput,
+      ...(options?.select ? { select: options.select } : {}),
     });
 
     return user;
   }
 
-  async updateMany(updates: Array<{ id: string; dto: UpdateUserDto }>) {
-    if (updates.length === 0) {
-      return [];
-    }
+  async remove(id: string, options?: UserQueryOptions) {
+    const deletedAt = new Date();
 
-    const values: unknown[] = [];
-    const valueRows: string[] = [];
-    let paramIndex = 1;
+    return this.prisma.client.$transaction(async tx => {
+      // Soft delete all child records
+      // updateMany doesn't support select - it only returns { count: number }
+      await tx.userAppSetting.updateMany({
+        where: {
+          userId: id,
+          deletedAt: null,
+        },
+        data: {
+          deletedAt,
+        },
+      });
 
-    updates.forEach(({ id, dto }) => {
-      const buildParam = (value: unknown, type: string): string => {
-        if (value !== undefined) {
-          values.push(value);
-          return `$${paramIndex++}::${type}`;
-        }
-        return 'NULL';
-      };
+      const user = await tx.user.update({
+        where: { id },
+        data: {
+          deletedAt,
+        },
+        ...(options?.select ? { select: options.select } : {}),
+      });
 
-      // Push id first to match parameter order
-      values.push(id);
-      const row = [
-        `$${paramIndex++}::uuid`, // id
-        buildParam(dto.email, 'varchar'),
-        buildParam(dto.name, 'varchar'), // undefined → NULL, null → parameter
-        buildParam(dto.role, '"Role"'),
-      ];
-      valueRows.push(`(${row.join(', ')})`);
-    });
-
-    const query = `
-      UPDATE users u
-      SET
-        email = COALESCE(v.email, u.email),
-        name = COALESCE(v.name, u.name),
-        role = COALESCE(v.role, u.role),
-        updated_at = NOW()
-      FROM (VALUES ${valueRows.join(', ')}) AS v(id, email, name, role)
-      WHERE u.id = v.id
-      RETURNING u.*
-    `;
-
-    return this.prisma.client.$queryRawUnsafe<User[]>(query, ...values);
-  }
-
-  async upsert(where: Prisma.UserWhereUniqueInput, dto: CreateUserDto) {
-    return this.prisma.client.user.upsert({
-      where,
-      update: dto as Prisma.UserUpdateInput,
-      create: dto as Prisma.UserCreateInput,
+      return user;
     });
   }
 
-  async delete(id: string) {
-    const user = await this.prisma.client.user.update({
+  async removeMany(ids: string[]) {
+    const deletedAt = new Date();
+
+    return this.prisma.client.$transaction(async tx => {
+      // Soft delete all child records for all users
+      // updateMany doesn't support select - it only returns { count: number }
+      await tx.userAppSetting.updateMany({
+        where: {
+          userId: { in: ids },
+          deletedAt: null,
+        },
+        data: {
+          deletedAt,
+        },
+      });
+
+      // Soft delete users
+      return tx.user.updateMany({
+        where: {
+          id: { in: ids },
+        },
+        data: {
+          deletedAt,
+        },
+      });
+    });
+  }
+
+  async existsById(id: string) {
+    const user = await this.prisma.client.user.findFirst({
       where: { id },
-      data: {
-        deletedAt: new Date(),
-      },
+      select: { id: true },
     });
-
-    return user;
+    return !!user;
   }
 
-  async deleteMany(ids: string[]) {
-    return this.prisma.client.user.updateMany({
+  async existsByIds(ids: string[]) {
+    const users = await this.prisma.client.user.findMany({
       where: {
         id: { in: ids },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-  }
-
-  async restore(id: string) {
-    return this.prisma.client.user.update({
-      where: { id },
-      data: {
         deletedAt: null,
       },
+      select: { id: true },
     });
-  }
-  // restore(id: string) {}
-
-  async count(options?: { where?: Prisma.UserWhereInput }) {
-    return this.prisma.client.user.count({
-      where: options?.where || {},
-    });
+    return users.map(user => user.id);
   }
 
-  async exists(id: string, options?: { where?: Prisma.UserWhereInput }) {
-    const count = await this.prisma.client.user.count({
-      where: {
-        id,
-        ...(options?.where || {}),
-      },
+  /**
+   * @param email - Email to check
+   * @param excludeId - ID to exclude from check (useful for update operations)
+   */
+  async emailExists(email: string, excludeId?: string) {
+    const where: Prisma.UserWhereInput = {
+      email,
+    };
+
+    if (excludeId) {
+      where.id = { not: excludeId };
+    }
+
+    const user = await this.prisma.client.user.findFirst({
+      where,
+      select: { id: true },
     });
-    return count > 0;
+    return !!user;
   }
 }
