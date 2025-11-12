@@ -4,6 +4,7 @@ import {
   PAGINATION_DEFAULT_LIMIT,
 } from '@common/constants/common.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
+import { Public } from '@auth/public.decorator';
 import {
   UserQueryDto,
   UsersQueryDto,
@@ -19,6 +20,7 @@ import { UserService } from '@modules/user/application/user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string, @Query() query: UserQueryDto): Promise<User> {
     // GET /users/:id?include=appSettings

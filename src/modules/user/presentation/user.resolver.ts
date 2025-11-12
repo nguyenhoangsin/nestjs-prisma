@@ -2,9 +2,10 @@ import { Resolver, Query, Mutation, ID, Args, ResolveField, Parent } from '@nest
 import * as DataLoader from 'dataloader';
 import { PrismaSelectObject } from '@common/types/common.type';
 import { SelectFields } from '@common/decorators/select-fields.decorator';
-import { UserService } from '@modules/user/application/user.service';
 import { PrismaService } from '@database/prisma/prisma.service';
 import { PaginationInput } from '@graphql/graphql-types';
+import { Public } from '@auth/public.decorator';
+import { DataLoaderService, DataLoaderKey } from '@shared/data-loader.service';
 import {
   User,
   UserAppSetting,
@@ -12,7 +13,7 @@ import {
   UpdateUserInput,
   PaginatedUsers,
 } from '@modules/user/presentation/user.dto';
-import { DataLoaderService, DataLoaderKey } from '@shared/data-loader.service';
+import { UserService } from '@modules/user/application/user.service';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -36,6 +37,7 @@ export class UserResolver {
    * @param select - Prisma select object
    * @returns User
    */
+  @Public()
   @Query(() => User)
   user(
     @Args('id', { type: () => ID }) id: string,

@@ -6,8 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
+import { getRequest } from '@common/utils/execution-context.util';
 import { PUBLIC_METADATA_KEY } from '@auth/auth-types';
 
 /**
@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request: Request = context.switchToHttp().getRequest();
+    const request = getRequest(context);
     const token = request.headers.authorization?.split(' ')[1];
     if (!token) {
       throw new UnauthorizedException(CUSTOM_HTTP_STATUS.UNAUTHORIZED);

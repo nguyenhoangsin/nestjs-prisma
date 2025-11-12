@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
+import { getRequest } from '@common/utils/execution-context.util';
 import { PERMISSIONS_METADATA_KEY, Permission, UserPayload } from '@auth/auth-types';
 
 /**
@@ -34,7 +35,7 @@ export class PermissionsGuard implements CanActivate {
     }
 
     // Retrieve user information from the request
-    const request = context.switchToHttp().getRequest<{ user?: UserPayload }>();
+    const request = getRequest<{ user?: UserPayload }>(context);
     const user = request.user;
 
     if (!user?.permissions) {
