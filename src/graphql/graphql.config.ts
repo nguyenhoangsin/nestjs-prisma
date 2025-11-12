@@ -1,10 +1,15 @@
 import { join } from 'path';
 import { Request, Response } from 'express';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLScalarType } from 'graphql';
+import { GraphQLJSON } from 'graphql-scalars';
 import { graphqlFormatError } from '@graphql/graphql-format-error';
-import { resolverScalars } from '@graphql/graphql-scalars';
 import '@graphql/graphql-register-enum';
 import { Environment } from '@common/enums/common.enum';
+
+export const resolverScalars: Record<string, GraphQLScalarType> = {
+  JSON: GraphQLJSON,
+};
 
 export const graphqlConfig: ApolloDriverConfig = {
   driver: ApolloDriver,

@@ -7,16 +7,17 @@ import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 /**
  * Property decorator that automatically decodes Base64 strings to text.
  * Only decodes when the result is safe printable text (not binary data like images).
+ * Optionally validates the maximum length of the decoded text.
  *
  * @example
  * ```typescript
  * class ExampleDto {
- *   @Base64Text()
- *   example: string;
+ *   @Base64Text(50)
+ *   name: string;
  * }
  * ```
  */
-export function Base64Text() {
+export function Base64Text(maxLength?: number) {
   return Transform(({ value, key }: { value: Nullable<string>; key: string }): Nullable<string> => {
     // Allow undefined/null for optional fields
     if (isNil(value)) {
@@ -31,6 +32,16 @@ export function Base64Text() {
     }
 
     // decodeBase64Text returns original value if decode fails
-    return decodeBase64Text(value);
+    const decoded = decodeBase64Text(value);
+
+    // Validate maxLength if provided
+    if (maxLength !== undefined && decoded.length > maxLength) {
+      throw new BadRequestException({
+        ...CUSTOM_HTTP_STATUS.VALIDATION_FAILED,
+        message: `${key} must not be longer than ${maxLength} characters`,
+      });
+    }
+
+    return decoded;
   });
 }

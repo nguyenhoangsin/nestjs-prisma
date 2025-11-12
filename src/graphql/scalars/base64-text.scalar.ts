@@ -27,11 +27,7 @@ export class Base64TextScalar implements CustomScalar<Nullable<string>, Nullable
     if (!isString(value)) {
       this.throwError('must be a string');
     }
-    try {
-      return decodeBase64Text(value);
-    } catch (error) {
-      this.throwError((error as Error)?.message);
-    }
+    return decodeBase64Text(value);
   }
 
   serialize(value: Nullable<string>): Nullable<string> {
@@ -52,11 +48,7 @@ export class Base64TextScalar implements CustomScalar<Nullable<string>, Nullable
     if (ast.kind !== Kind.STRING) {
       this.throwError('must be a string');
     }
-    try {
-      return decodeBase64Text(ast.value);
-    } catch (error) {
-      this.throwError((error as Error)?.message);
-    }
+    return decodeBase64Text(ast.value);
   }
 
   private throwError(message: string): never {
