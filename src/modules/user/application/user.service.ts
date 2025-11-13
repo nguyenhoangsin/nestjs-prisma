@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { EntityType } from '@prisma/client';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
 import { toPrismaSelect } from '@common/utils/prisma-query.util';
 import { UserRepository } from '@modules/user/infrastructure/user.repository';
 import { PaginationMeta } from '@graphql/graphql-types';
+import { AuditLogService } from '@shared/audit-log.service';
 import { UserIncludeOption, UserQueryOptions } from '@modules/user/presentation/user-types';
 import {
   CreateUserDto,
@@ -16,7 +18,10 @@ import {
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly auditLogService: AuditLogService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   async findOne(id: string, select: PrismaSelectObject): Promise<User> {
     const queryOptions: UserQueryOptions = select ? { select: select.select } : {};
@@ -76,7 +81,14 @@ export class UserService {
 
     const queryOptions: UserQueryOptions = select ? { select: select.select } : {};
     const user = await this.userRepository.create(dto, queryOptions);
-    return plainToInstance(User, user);
+    const transformedUser = plainToInstance(User, user);
+
+    // Write audit log
+    this.auditLogService
+      .logCreate(EntityType.USER, transformedUser.id, '00000000-0000-0000-0000-000000000000', dto)
+      .catch(() => {});
+
+    return transformedUser;
   }
 
   async update(id: string, dto: UpdateUserDto, select?: PrismaSelectObject): Promise<User> {
@@ -96,7 +108,20 @@ export class UserService {
 
     const queryOptions: UserQueryOptions = select ? { select: select.select } : {};
     const user = await this.userRepository.update(id, dto, queryOptions);
-    return plainToInstance(User, user);
+    const transformedUser = plainToInstance(User, user);
+
+    // Write audit log
+    this.auditLogService
+      .logUpdate(
+        EntityType.USER,
+        transformedUser.id || id,
+        '00000000-0000-0000-0000-000000000000',
+        undefined,
+        dto,
+      )
+      .catch(() => {});
+
+    return transformedUser;
   }
 
   async remove(id: string, select?: PrismaSelectObject): Promise<User> {

@@ -30,7 +30,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  @Base64Text()
+  // @Base64Text()
   name?: string;
 
   @IsOptional()
