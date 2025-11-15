@@ -6,14 +6,14 @@ import { Passthrough } from '@common/decorators/passthrough.decorator';
 import { Virtual } from '@common/decorators/virtual.decorator';
 import { Base64Text } from '@common/decorators/base64-text.decorator';
 import { Role } from '@auth/auth-types';
-import { PaginationMeta } from '@graphql/graphql-types';
-import { PaginationDto } from '@common/dtos/common.dto';
+import { PaginationDto, PaginationMeta } from '@common/dtos/common.dto';
 import { UserIncludeOption } from '@modules/user/presentation/user-types';
 
 export class UserQueryDto {
   @IsOptional()
-  @IsEnum(UserIncludeOption)
-  include?: UserIncludeOption;
+  // { each: true } validates each element when include is an array
+  @IsEnum(UserIncludeOption, { each: true })
+  include?: UserIncludeOption | UserIncludeOption[];
 }
 
 export class UsersQueryDto extends PartialType(PaginationDto) {

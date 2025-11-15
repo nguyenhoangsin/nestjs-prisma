@@ -24,6 +24,8 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string, @Query() query: UserQueryDto): Promise<User> {
     // GET /users/:id?include=appSettings
+    // GET /users?include=appSettings,otherOption
+    // GET /users/:id?include=appSettings&include=otherOption
     const select = this.userService.buildUserSelect(query.include);
     return this.userService.findOne(id, select);
   }

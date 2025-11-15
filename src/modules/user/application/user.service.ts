@@ -3,9 +3,9 @@ import { plainToInstance } from 'class-transformer';
 import { EntityType } from '@prisma/client';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
+import { PaginationMeta } from '@common/dtos/common.dto';
 import { toPrismaSelect } from '@common/utils/prisma-query.util';
 import { UserRepository } from '@modules/user/infrastructure/user.repository';
-import { PaginationMeta } from '@graphql/graphql-types';
 import { AuditLogService } from '@shared/audit-log.service';
 import { UserIncludeOption, UserQueryOptions } from '@modules/user/presentation/user-types';
 import {

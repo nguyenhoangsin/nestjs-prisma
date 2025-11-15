@@ -1,9 +1,9 @@
 import { Resolver, Query, Mutation, ID, Args, ResolveField, Parent } from '@nestjs/graphql';
 import * as DataLoader from 'dataloader';
 import { PrismaSelectObject } from '@common/types/common.type';
+import { PaginationInput } from '@common/dtos/common.dto';
 import { SelectFields } from '@common/decorators/select-fields.decorator';
 import { PrismaService } from '@database/prisma/prisma.service';
-import { PaginationInput } from '@graphql/graphql-types';
 import { Public } from '@auth/public.decorator';
 import { DataLoaderService, DataLoaderKey } from '@shared/data-loader.service';
 import {

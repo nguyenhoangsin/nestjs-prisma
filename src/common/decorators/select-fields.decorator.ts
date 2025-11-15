@@ -49,8 +49,7 @@ export function SelectFields(modelClass?: new () => unknown) {
 
 /**
  * @note ONLY PROCESSES THE FIRST LEVEL; NESTED PASSTHROUGH FIELDS ARE NOT HANDLED.
- * Unwraps passthrough fields from a Prisma select object at the root level only.
- * When a passthrough field is found, returns the children's select object directly.
+ *       ONLY PROCESSES THE FIRST PASSTHROUGH FIELD ENCOUNTERED; OTHERS ARE IGNORED.
  */
 export function unwrapPassthroughFields(
   selectField: PrismaSelectObject,
