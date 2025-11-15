@@ -48,8 +48,15 @@ export function SelectFields(modelClass?: new () => unknown) {
 }
 
 /**
- * @note ONLY PROCESSES THE FIRST LEVEL; NESTED PASSTHROUGH FIELDS ARE NOT HANDLED.
- *       ONLY PROCESSES THE FIRST PASSTHROUGH FIELD ENCOUNTERED; OTHERS ARE IGNORED.
+ * Unwraps passthrough fields from Prisma select object for pagination queries.
+ * When building queries for paginated responses, unwraps wrapper fields (e.g., `items`)
+ * and returns the nested select object directly for the model query.
+ *
+ * @example
+ * Input:  `{ select: { items: { select: { id: true, email: true } }, meta: { select: { total: true } } } }`
+ * Output: `{ select: { id: true, email: true } }`
+ * @note   `meta` is excluded because this function returns only the nested select of the passthrough field (`items`),
+ *         other fields are not handled.
  */
 export function unwrapPassthroughFields(
   selectField: PrismaSelectObject,
