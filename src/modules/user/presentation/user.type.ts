@@ -1,14 +1,25 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { InputType, ObjectType, Field, ID, PartialType as GqlPartialType } from '@nestjs/graphql';
 import { IsOptional, IsEmail, IsString, IsEnum, MaxLength, IsArray, IsUUID } from 'class-validator';
-import { IPaginated } from '@common/interfaces/common.interface';
+import { Prisma } from '@prisma/client';
+import { PrismaSelectObject } from '@common/types/common.type';
+import { IPaginated, PaginationDto, PaginationMeta } from '@common/types/pagination.type';
 import { Passthrough } from '@common/decorators/passthrough.decorator';
 import { Virtual } from '@common/decorators/virtual.decorator';
 import { Base64Text } from '@common/decorators/base64-text.decorator';
 import { Role } from '@auth/auth-types';
-import { PaginationDto, PaginationMeta } from '@common/dtos/common.dto';
-import { UserIncludeOption } from '@modules/user/presentation/user-types';
 
+export enum UserIncludeOption {
+  APP_SETTINGS = 'appSettings',
+}
+
+export type UserQueryOptions = {
+  select?: Record<string, true | PrismaSelectObject>;
+  where?: Prisma.UserWhereInput;
+  orderBy?: Prisma.UserOrderByWithRelationInput;
+};
+
+// Base user query DTO (for REST)
 export class UserQueryDto {
   @IsOptional()
   // { each: true } validates each element when include is an array
@@ -16,12 +27,14 @@ export class UserQueryDto {
   include?: UserIncludeOption | UserIncludeOption[];
 }
 
+// Users query with pagination DTO (for REST)
 export class UsersQueryDto extends PartialType(PaginationDto) {
   @IsOptional()
   @IsEnum(UserIncludeOption, { each: true })
   include?: UserIncludeOption | UserIncludeOption[];
 }
 
+// Base create user DTO (for REST)
 export class CreateUserDto {
   @IsEmail()
   @MaxLength(50)
@@ -38,14 +51,17 @@ export class CreateUserDto {
   role?: Role;
 }
 
+// Update user DTO (for REST)
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
 
+// Delete users DTO (for REST)
 export class DeleteUsersDto {
   @IsArray()
   @IsUUID('4', { each: true })
   ids: string[];
 }
 
+// GraphQL Input Types
 @InputType()
 export class CreateUserInput extends CreateUserDto {
   @Field(() => String)
@@ -61,6 +77,7 @@ export class CreateUserInput extends CreateUserDto {
 @InputType()
 export class UpdateUserInput extends GqlPartialType(CreateUserInput) {}
 
+// User object types (REST & GraphQL)
 @ObjectType()
 export class User {
   @Field(() => ID)
@@ -107,6 +124,7 @@ export class UserAppSetting {
   updatedAt: Date;
 }
 
+// Paginated users response (REST & GraphQL)
 @ObjectType()
 export class PaginatedUsers implements IPaginated<User> {
   @Passthrough()

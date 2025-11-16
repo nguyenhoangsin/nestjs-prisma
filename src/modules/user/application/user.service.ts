@@ -3,18 +3,19 @@ import { plainToInstance } from 'class-transformer';
 import { EntityType } from '@prisma/client';
 import { CUSTOM_HTTP_STATUS } from '@common/constants/http-status.constant';
 import { PrismaSelectObject } from '@common/types/common.type';
-import { PaginationMeta } from '@common/dtos/common.dto';
+import { PaginationMeta } from '@common/types/pagination.type';
 import { toPrismaSelect } from '@common/utils/prisma-query.util';
 import { UserRepository } from '@modules/user/infrastructure/user.repository';
 import { AuditLogService } from '@shared/audit-log.service';
-import { UserIncludeOption, UserQueryOptions } from '@modules/user/presentation/user-types';
 import {
+  UserIncludeOption,
+  UserQueryOptions,
   CreateUserDto,
   UpdateUserDto,
   User,
-  PaginatedUsers,
   UserAppSetting,
-} from '@modules/user/presentation/user.dto';
+  PaginatedUsers,
+} from '@modules/user/presentation/user.type';
 
 @Injectable()
 export class UserService {

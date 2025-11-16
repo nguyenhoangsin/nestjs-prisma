@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, ID, Args, ResolveField, Parent } from '@nestjs/graphql';
 import * as DataLoader from 'dataloader';
 import { PrismaSelectObject } from '@common/types/common.type';
-import { PaginationInput } from '@common/dtos/common.dto';
+import { PaginationInput } from '@common/types/pagination.type';
 import { SelectFields } from '@common/decorators/select-fields.decorator';
 import { PrismaService } from '@database/prisma/prisma.service';
 import { Public } from '@auth/public.decorator';
@@ -12,7 +12,7 @@ import {
   CreateUserInput,
   UpdateUserInput,
   PaginatedUsers,
-} from '@modules/user/presentation/user.dto';
+} from '@modules/user/presentation/user.type';
 import { UserService } from '@modules/user/application/user.service';
 
 @Resolver(() => User)

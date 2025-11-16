@@ -1,6 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Environment } from '@common/enums/common.enum';
+import { Environment } from '@common/types/enum.type';
 
 export function registerSwagger(app: INestApplication) {
   if (process.env.NODE_ENV === Environment.production) {

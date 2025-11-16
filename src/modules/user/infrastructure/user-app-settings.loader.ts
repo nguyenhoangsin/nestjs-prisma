@@ -4,7 +4,7 @@ import * as DataLoader from 'dataloader';
 import { groupBy } from 'lodash';
 import { PrismaService } from '@database/prisma/prisma.service';
 import { PrismaSelectObject } from '@common/types/common.type';
-import { UserAppSetting } from '@modules/user/presentation/user.dto';
+import { UserAppSetting } from '@modules/user/presentation/user.type';
 
 interface LoaderKey {
   userId: string;

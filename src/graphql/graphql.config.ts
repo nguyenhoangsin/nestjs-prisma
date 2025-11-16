@@ -5,11 +5,14 @@ import { GraphQLScalarType } from 'graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { graphqlFormatError } from '@graphql/graphql-format-error';
 import '@graphql/graphql-register-enum';
-import { Environment } from '@common/enums/common.enum';
+import { Environment } from '@common/types/enum.type';
+import { Base64TextScalar } from '@graphql/scalars/base64-text.scalar';
 
 export const resolverScalars: Record<string, GraphQLScalarType> = {
   JSON: GraphQLJSON,
 };
+
+export const graphqlScalars = [Base64TextScalar];
 
 export const graphqlConfig: ApolloDriverConfig = {
   driver: ApolloDriver,

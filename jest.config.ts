@@ -38,8 +38,6 @@ const config: Config = {
     '!<rootDir>/middleware/**',
     '!<rootDir>/shared/**',
     // Files to exclude
-    '!<rootDir>/**/*-scalars.ts',
-    '!<rootDir>/**/*-types.ts',
     '!<rootDir>/**/*.abstract.ts',
     '!<rootDir>/**/*.api.ts',
     '!<rootDir>/**/*.config.ts',

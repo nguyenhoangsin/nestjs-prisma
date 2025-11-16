@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { IRepository } from '@common/interfaces/repository.interface';
+import { IRepository } from '@common/types/repository.type';
 import { PrismaService } from '@database/prisma/prisma.service';
-import { UserQueryOptions } from '@modules/user/presentation/user-types';
-import { CreateUserDto, UpdateUserDto } from '@modules/user/presentation/user.dto';
+import {
+  UserQueryOptions,
+  CreateUserDto,
+  UpdateUserDto,
+} from '@modules/user/presentation/user.type';
 
 @Injectable()
 export class UserRepository implements IRepository {

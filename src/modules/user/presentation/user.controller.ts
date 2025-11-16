@@ -13,7 +13,7 @@ import {
   DeleteUsersDto,
   User,
   PaginatedUsers,
-} from '@modules/user/presentation/user.dto';
+} from '@modules/user/presentation/user.type';
 import { UserService } from '@modules/user/application/user.service';
 
 @Controller('users')

@@ -1,6 +1,7 @@
 import { InputType, ObjectType, Field, Int } from '@nestjs/graphql';
 import { IsOptional, IsInt, Min } from 'class-validator';
 
+// Base pagination DTO (for REST)
 export class PaginationDto {
   @IsOptional()
   @IsInt()
@@ -13,21 +14,7 @@ export class PaginationDto {
   limit: number;
 }
 
-@InputType()
-export class SortInput {
-  @Field(() => String, { nullable: true })
-  sortBy?: string;
-
-  @Field(() => String, { nullable: true })
-  sortOrder?: 'asc' | 'desc';
-}
-
-@InputType()
-export class FilterInput {
-  @Field(() => [String], { nullable: true })
-  search?: string[];
-}
-
+// GraphQL Input Types
 @InputType()
 export class PaginationInput extends PaginationDto {
   @Field(() => Int)
@@ -37,6 +24,7 @@ export class PaginationInput extends PaginationDto {
   declare limit: number;
 }
 
+// Pagination meta (REST & GraphQL)
 @ObjectType()
 export class PaginationMeta {
   @Field(() => Int)
@@ -56,4 +44,10 @@ export class PaginationMeta {
 
   @Field(() => Boolean)
   hasPreviousPage: boolean;
+}
+
+// Paginated response interface
+export interface IPaginated<T> {
+  items: T[];
+  meta: PaginationMeta;
 }
