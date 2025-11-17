@@ -46,15 +46,15 @@ export class UserController {
   }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  create(@Body() dto: CreateUserDto): Promise<User> {
     const select = this.userService.buildUserSelect();
-    return this.userService.create(createUserDto, select);
+    return this.userService.create(dto, select);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     const select = this.userService.buildUserSelect();
-    return this.userService.update(id, updateUserDto, select);
+    return this.userService.update(id, dto, select);
   }
 
   @Delete(':id')
@@ -64,7 +64,7 @@ export class UserController {
   }
 
   @Post('bulk-delete')
-  removeMany(@Body() deleteUsersDto: DeleteUsersDto): Promise<{ count: number }> {
-    return this.userService.removeMany(deleteUsersDto.ids);
+  removeMany(@Body() dto: DeleteUsersDto): Promise<{ count: number }> {
+    return this.userService.removeMany(dto.ids);
   }
 }
