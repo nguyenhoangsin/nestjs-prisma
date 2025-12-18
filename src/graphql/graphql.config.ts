@@ -17,7 +17,7 @@ export const graphqlScalars = [Base64TextScalar];
 export const graphqlConfig: ApolloDriverConfig = {
   driver: ApolloDriver,
   autoSchemaFile: join(process.cwd(), 'src/graphql/schema.generated.gql'),
-  sortSchema: false,
+  sortSchema: true,
   // resolvers: resolverScalars,
   formatError: graphqlFormatError,
   context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
