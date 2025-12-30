@@ -88,7 +88,6 @@ export function unwrapPassthroughFields(
 
 /**
  * Filters virtual fields from a Prisma select object for the root model only.
- * Excludes nested relationship fields (handled by @ResolveField()).
  */
 export function filterVirtualFields(
   selectField: PrismaSelectObject,
@@ -108,18 +107,17 @@ export function filterVirtualFields(
     }
 
     // A nested PrismaSelectObject is an object with a 'select' property that is also an object
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      'select' in value &&
-      typeof value.select === 'object' &&
-      value.select !== null
-    ) {
-      // Skip nested relationship - it should be handled by @ResolveField()
-      continue;
-    }
+    // if (
+    //   value !== null &&
+    //   typeof value === 'object' &&
+    //   'select' in value &&
+    //   typeof value.select === 'object' &&
+    //   value.select !== null
+    // ) {
+    //   // Skip nested relationship - it should be handled by @ResolveField()
+    //   continue;
+    // }
 
-    // Include all other fields
     filteredSelect[fieldName] = value;
   }
 
